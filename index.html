@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <title>AssetMap Prototype</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+
+<body>
+  <div class="app">
+
+    <!-- TOPBAR -->
+    <header class="topbar">
+      <div class="logo">AssetMap</div>
+
+      <div class="search">
+        <input type="text" id="searchInput" placeholder="Suche nach Assets…" />
+      </div>
+<select id="layoutSelect">
+  <option value="">– Automatisch anordnen –</option>
+  <option value="grid">Raster</option>
+  <option value="circle">Kreis</option>
+  <option value="links">Nach Verknüpfungen</option>
+</select>
+      <div class="pill-group">
+        <button class="pill pill-active" data-filter="all">Alle</button>
+        <button class="pill" data-filter="application">Anwendungen</button>
+        <button class="pill" data-filter="system">Systeme</button>
+        <button class="pill" data-filter="database">Datenbanken</button>
+      </div>
+
+      <button id="addAssetBtn" class="primary-btn">+ Neue Karte</button>
+    </header>
+
+    <!-- MAIN AREA -->
+    <main class="main">
+
+      <!-- CANVAS-BEREICH -->
+<div class="canvas" id="canvas">
+    <svg id="linksSvg" class="links-svg"></svg>
+    <div id="cardsLayer"></div>
+</div>
+
+      <!-- DETAILPANEL -->
+      <aside class="detail" id="detailPanel">
+
+        <div class="detail-empty" id="detailEmpty">
+          <p>Wähle eine Karte aus, um Details zu sehen.</p>
+        </div>
+
+        <div class="detail-content hidden" id="detailContent">
+
+          <h2 id="detailTitle"></h2>
+          <div class="detail-sub" id="detailSubtitle"></div>
+
+          <!-- BASIS -->
+          <section class="section">
+            <div class="section-title">Basisinformationen</div>
+
+            <div class="field">
+              <span class="field-label">Name:</span>
+              <input id="fieldName" />
+            </div>
+
+            <div class="field">
+              <span class="field-label">Typ:</span>
+              <select id="fieldType">
+                <option value="application">Anwendung</option>
+                <option value="system">System</option>
+                <option value="database">Datenbank</option>
+              </select>
+            </div>
+
+            <div class="field">
+              <span class="field-label">Beschreibung:</span>
+              <textarea id="fieldDescription" rows="3"></textarea>
+            </div>
+          </section>
+
+          <!-- OWNER -->
+          <section class="section">
+            <div class="section-title">Verantwortung</div>
+
+            <div class="field">
+              <span class="field-label">Owner:</span>
+              <input id="fieldOwner" />
+            </div>
+          </section>
+
+          <!-- SCHUTZBEDARF -->
+          <section class="section">
+            <div class="section-title">Schutzbedarf</div>
+
+            <div class="field">
+              <span class="field-label">Kritikalität:</span>
+              <select id="fieldCriticality">
+                <option value="low">Niedrig</option>
+                <option value="medium">Mittel</option>
+                <option value="high">Hoch</option>
+              </select>
+            </div>
+          </section>
+
+          <!-- LINKS -->
+          <section class="section">
+            <div class="section-title">Verknüpfungen</div>
+
+            <div class="field">
+              <span class="field-label">Neuer Link:</span>
+              <select id="fieldLinkSelect">
+                <option value="">– Ziel auswählen –</option>
+              </select>
+            </div>
+
+            <div class="field">
+              <span class="field-label"></span>
+              <button id="addLinkBtn" class="primary-btn">Link hinzufügen</button>
+            </div>
+
+            <div class="field">
+              <span class="field-label">Links:</span>
+              <ul id="linksList" class="links-list"></ul>
+            </div>
+          </section>
+
+          <!-- ACTIONS -->
+          <div class="section">
+            <button id="saveBtn" class="primary-btn full">Änderungen speichern</button>
+            <button id="deleteBtn" class="danger-btn full">Karte löschen</button>
+          </div>
+
+        </div>
+      </aside>
+
+    </main>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

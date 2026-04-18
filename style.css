@@ -1,0 +1,322 @@
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+/* NEU: Body auf volle Höhe + Hintergrund */
+html, body {
+  width: 100%;
+  height: 100%;
+}
+
+body {
+  background: #e5e7eb;
+}
+
+/* APP: statt fester Breite → volle Viewportgröße */
+.app {
+  width: 100vw;          /* vorher: 1200px */
+  height: 100vh;         /* NEU: volle Höhe */
+  margin: 0;             /* vorher: 24px auto */
+  background: #f9fafb;
+  border-radius: 0;      /* optional: kein Card-Look mehr */
+  box-shadow: none;      /* optional: kein Schatten mehr */
+  overflow: hidden;
+  border: none;          /* optional: kein Rahmen mehr */
+}
+
+/* TOPBAR */
+
+.topbar {
+  height: 60px;
+  background: #ffffff;
+  border-bottom: 1px solid #e5e7eb;
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
+  gap: 12px;
+}
+
+.logo {
+  font-weight: 700;
+  font-size: 18px;
+  color: #111827;
+}
+
+.search {
+  flex: 1;
+}
+
+.search input {
+  width: 100%;
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: 1px solid #d1d5db;
+  font-size: 14px;
+  background: #f9fafb;
+}
+
+.pill-group {
+  display: flex;
+  gap: 6px;
+}
+
+.pill {
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: 1px solid #d1d5db;
+  font-size: 12px;
+  background: #f3f4f6;
+  color: #374151;
+  cursor: pointer;
+}
+
+.pill-active {
+  background: #1d4ed8;
+  color: #ffffff;
+  border-color: #1d4ed8;
+}
+
+.primary-btn,
+.danger-btn {
+  border-radius: 999px;
+  border: none;
+  padding: 6px 14px;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.primary-btn {
+  background: #1d4ed8;
+  color: #ffffff;
+}
+
+.danger-btn {
+  background: #b91c1c;
+  color: #ffffff;
+}
+
+.primary-btn.full,
+.danger-btn.full {
+  width: 100%;
+  margin-top: 6px;
+}
+
+/* MAIN LAYOUT */
+/* statt fixer Höhe → restliche Höhe unter der Topbar nutzen */
+.main {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  height: calc(100vh - 60px);  /* vorher: 640px */
+}
+
+/* CANVAS */
+
+.canvas {
+  position: relative;
+  background: #f3f4f6;
+  border-right: 1px solid #e5e7eb;
+  overflow: hidden;
+}
+
+#cardsLayer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 2;
+  pointer-events: auto;
+}
+
+.links-svg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* DETAILPANEL */
+
+.detail {
+  background: #ffffff;
+  padding: 14px 16px;
+  overflow-y: auto;
+}
+
+.detail-empty {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #6b7280;
+  font-size: 14px;
+}
+
+.detail-content.hidden {
+  display: none;
+}
+
+.detail h2 {
+  font-size: 20px;
+  font-weight: 600;
+  color: #111827;
+}
+
+.detail-sub {
+  font-size: 12px;
+  color: #6b7280;
+  margin-bottom: 12px;
+}
+
+.section {
+  margin-top: 12px;
+  margin-bottom: 8px;
+}
+
+.section-title {
+  font-size: 11px;
+  font-weight: 600;
+  color: #4b5563;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 4px;
+}
+
+.field {
+  display: flex;
+  align-items: center;
+  margin-bottom: 4px;
+  font-size: 13px;
+}
+
+.field-label {
+  width: 100px;
+  color: #6b7280;
+  font-size: 12px;
+}
+
+.field input,
+.field select,
+.field textarea {
+  flex: 1;
+  padding: 4px 6px;
+  border-radius: 6px;
+  border: 1px solid #d1d5db;
+  font-size: 13px;
+}
+
+.field textarea {
+  resize: vertical;
+}
+
+/* KARTEN */
+
+.asset-card {
+  position: absolute;
+  width: 220px;
+  min-height: 90px;
+  background: #ffffff;
+  border-radius: 10px;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 8px 18px rgba(15, 23, 42, 0.08);
+  padding: 8px 10px;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.asset-card.selected {
+  border-color: #1d4ed8;
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.4);
+}
+
+.asset-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 4px;
+}
+
+.asset-card-title {
+  font-weight: 600;
+  font-size: 13px;
+  color: #111827;
+}
+
+.asset-card-tags {
+  display: flex;
+  gap: 4px;
+}
+
+.tag {
+  padding: 2px 6px;
+  border-radius: 999px;
+  font-size: 10px;
+  background: #e5e7eb;
+  color: #374151;
+}
+
+.tag-application {
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+
+.tag-system {
+  background: #e5e7eb;
+  color: #374151;
+}
+
+.tag-database {
+  background: #ede9fe;
+  color: #6d28d9;
+}
+
+.tag-critical-high {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+.tag-critical-medium {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.tag-critical-low {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.asset-card-row {
+  display: flex;
+  justify-content: space-between;
+  color: #4b5563;
+}
+
+/* LINKS LISTE */
+
+.links-list {
+  list-style: none;
+  padding-left: 0;
+  font-size: 12px;
+  color: #374151;
+}
+
+.links-list li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2px;
+}
+
+.links-list button {
+  border: none;
+  background: transparent;
+  color: #b91c1c;
+  cursor: pointer;
+  font-size: 11px;
+}
