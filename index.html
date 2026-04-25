@@ -16,17 +16,20 @@
       <div class="search">
         <input type="text" id="searchInput" placeholder="Suche nach Assets…" />
       </div>
-<select id="layoutSelect">
-  <option value="">– Automatisch anordnen –</option>
-  <option value="grid">Raster</option>
-  <option value="circle">Kreis</option>
-  <option value="links">Nach Verknüpfungen</option>
-</select>
+
+      <select id="layoutSelect">
+        <option value="">– Automatisch anordnen –</option>
+        <option value="grid">Raster</option>
+        <option value="circle">Kreis</option>
+        <option value="links">Nach Verknüpfungen</option>
+      </select>
+
       <div class="pill-group">
         <button class="pill pill-active" data-filter="all">Alle</button>
         <button class="pill" data-filter="application">Anwendungen</button>
         <button class="pill" data-filter="system">Systeme</button>
-        <button class="pill" data-filter="database">Datenbanken</button>
+        <button class="pill" data-filter="data">Daten</button>
+        <button class="pill" data-filter="process">Prozesse</button>
       </div>
 
       <button id="addAssetBtn" class="primary-btn">+ Neue Karte</button>
@@ -35,11 +38,11 @@
     <!-- MAIN AREA -->
     <main class="main">
 
-      <!-- CANVAS-BEREICH -->
-<div class="canvas" id="canvas">
-    <svg id="linksSvg" class="links-svg"></svg>
-    <div id="cardsLayer"></div>
-</div>
+      <!-- CANVAS -->
+      <div class="canvas" id="canvas">
+        <svg id="linksSvg" class="links-svg"></svg>
+        <div id="cardsLayer"></div>
+      </div>
 
       <!-- DETAILPANEL -->
       <aside class="detail" id="detailPanel">
@@ -63,11 +66,21 @@
             </div>
 
             <div class="field">
-              <span class="field-label">Typ:</span>
+              <span class="field-label">Kategorie:</span>
               <select id="fieldType">
                 <option value="application">Anwendung</option>
                 <option value="system">System</option>
-                <option value="database">Datenbank</option>
+                <option value="data">Daten</option>
+                <option value="process">Prozess</option>
+              </select>
+            </div>
+
+            <div class="field">
+              <span class="field-label">Status:</span>
+              <select id="fieldStatus">
+                <option value="aktiv">Aktiv</option>
+                <option value="geplant">Geplant</option>
+                <option value="ausserbetrieb">Außer Betrieb</option>
               </select>
             </div>
 
@@ -77,12 +90,12 @@
             </div>
           </section>
 
-          <!-- OWNER -->
+          <!-- VERANTWORTUNG -->
           <section class="section">
             <div class="section-title">Verantwortung</div>
 
             <div class="field">
-              <span class="field-label">Owner:</span>
+              <span class="field-label">Verantwortlicher:</span>
               <input id="fieldOwner" />
             </div>
           </section>
@@ -92,7 +105,7 @@
             <div class="section-title">Schutzbedarf</div>
 
             <div class="field">
-              <span class="field-label">Kritikalität:</span>
+              <span class="field-label">Schutzbedarf:</span>
               <select id="fieldCriticality">
                 <option value="low">Niedrig</option>
                 <option value="medium">Mittel</option>
@@ -101,15 +114,63 @@
             </div>
           </section>
 
+          <!-- TAGS -->
+          <section class="section">
+            <div class="section-title">Tags</div>
+            <div class="field">
+              <span class="field-label">Tags:</span>
+              <input id="fieldTags" placeholder="Kommagetrennt" />
+            </div>
+          </section>
+
+          <!-- ANWENDUNGEN -->
+          <section id="sectionApplication" class="section hidden">
+            <div class="section-title">Anwendung</div>
+
+            <div class="field"><span class="field-label">Technologie:</span><input id="appTech"></div>
+            <div class="field"><span class="field-label">Lizenz:</span><input id="appLicense"></div>
+            <div class="field"><span class="field-label">Version:</span><input id="appVersion"></div>
+            <div class="field"><span class="field-label">Authentifizierung:</span><input id="appAuth"></div>
+          </section>
+
+          <!-- SYSTEME -->
+          <section id="sectionSystem" class="section hidden">
+            <div class="section-title">System</div>
+
+            <div class="field"><span class="field-label">Betriebssystem:</span><input id="sysOS"></div>
+            <div class="field"><span class="field-label">Netzwerkzone:</span><input id="sysZone"></div>
+            <div class="field"><span class="field-label">IP/Hostname:</span><input id="sysIP"></div>
+            <div class="field"><span class="field-label">Authentifizierung:</span><input id="sysAuth"></div>
+            <div class="field"><span class="field-label">Standort:</span><input id="sysLocation"></div>
+          </section>
+
+          <!-- DATEN -->
+          <section id="sectionData" class="section hidden">
+            <div class="section-title">Daten</div>
+
+            <div class="field">
+              <span class="field-label">Personenbezogen:</span>
+              <input type="checkbox" id="dataPersonal">
+            </div>
+
+            <div class="field"><span class="field-label">Datenformat:</span><input id="dataFormat"></div>
+            <div class="field"><span class="field-label">Speicherort:</span><input id="dataStorage"></div>
+            <div class="field"><span class="field-label">Backup:</span><input id="dataBackup"></div>
+          </section>
+
+          <!-- PROZESSE -->
+          <section id="sectionProcess" class="section hidden">
+            <div class="section-title">Prozess</div>
+            <p style="font-size:12px;color:#6b7280;">Keine zusätzlichen Felder.</p>
+          </section>
+
           <!-- LINKS -->
           <section class="section">
             <div class="section-title">Verknüpfungen</div>
 
             <div class="field">
               <span class="field-label">Neuer Link:</span>
-              <select id="fieldLinkSelect">
-                <option value="">– Ziel auswählen –</option>
-              </select>
+              <select id="fieldLinkSelect"></select>
             </div>
 
             <div class="field">

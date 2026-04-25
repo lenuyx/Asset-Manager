@@ -2,28 +2,54 @@
    ELEMENTE – Referenzen auf alle wichtigen DOM-Elemente
 --------------------------------------------------------- */
 
-const canvasEl = document.getElementById("canvas");                 // Hauptfläche, auf die man klickt, um Auswahl zu löschen
-const detailEmptyEl = document.getElementById("detailEmpty");       // Platzhalter, wenn kein Asset ausgewählt ist
-const detailContentEl = document.getElementById("detailContent");   // Detailbereich für ausgewähltes Asset
+const canvasEl = document.getElementById("canvas");
+const detailEmptyEl = document.getElementById("detailEmpty");
+const detailContentEl = document.getElementById("detailContent");
 const layoutSelect = document.getElementById("layoutSelect");
 const cardsLayer = document.getElementById("cardsLayer");
 
-
-// Eingabefelder im Detailbereich
+// Eingabefelder im Detailbereich (gemeinsam)
 const fieldName = document.getElementById("fieldName");
 const fieldType = document.getElementById("fieldType");
+const fieldStatus = document.getElementById("fieldStatus");
 const fieldDescription = document.getElementById("fieldDescription");
 const fieldOwner = document.getElementById("fieldOwner");
 const fieldCriticality = document.getElementById("fieldCriticality");
+const fieldTags = document.getElementById("fieldTags");
 
 // Link-UI
-const fieldLinkSelect = document.getElementById("fieldLinkSelect"); // Dropdown für neue Verknüpfungen
-const addLinkBtn = document.getElementById("addLinkBtn");           // Button zum Hinzufügen einer Verknüpfung
-const linksListEl = document.getElementById("linksList");           // Liste der bestehenden Links
+const fieldLinkSelect = document.getElementById("fieldLinkSelect");
+const addLinkBtn = document.getElementById("addLinkBtn");
+const linksListEl = document.getElementById("linksList");
 
 // Titel im Detailbereich
 const detailTitle = document.getElementById("detailTitle");
 const detailSubtitle = document.getElementById("detailSubtitle");
+
+// Kategorie-spezifische Felder
+const sectionApplication = document.getElementById("sectionApplication");
+const sectionSystem = document.getElementById("sectionSystem");
+const sectionData = document.getElementById("sectionData");
+const sectionProcess = document.getElementById("sectionProcess");
+
+// Anwendung
+const appTech = document.getElementById("appTech");
+const appLicense = document.getElementById("appLicense");
+const appVersion = document.getElementById("appVersion");
+const appAuth = document.getElementById("appAuth");
+
+// System
+const sysOS = document.getElementById("sysOS");
+const sysZone = document.getElementById("sysZone");
+const sysIP = document.getElementById("sysIP");
+const sysAuth = document.getElementById("sysAuth");
+const sysLocation = document.getElementById("sysLocation");
+
+// Daten
+const dataPersonal = document.getElementById("dataPersonal");
+const dataFormat = document.getElementById("dataFormat");
+const dataStorage = document.getElementById("dataStorage");
+const dataBackup = document.getElementById("dataBackup");
 
 // Buttons
 const addAssetBtn = document.getElementById("addAssetBtn");
@@ -36,7 +62,6 @@ const pillButtons = document.querySelectorAll(".pill");
 
 const DRAG_THRESHOLD = 5;
 
-
 /* ---------------------------------------------------------
    STATE – interner Zustand der Anwendung
 --------------------------------------------------------- */
@@ -44,16 +69,14 @@ const DRAG_THRESHOLD = 5;
 let assets = [];              // Liste aller Karten
 let selectedId = null;        // ID des aktuell ausgewählten Assets
 
-let dragInfo = null;          // Infos zum Dragging (Startposition, Asset-ID)
+let dragInfo = null;          // Infos zum Karten-Dragging (Startposition, Asset-ID)
 let hasDragged = false;       // verhindert Click-Events nach Drag
-let currentFilter = "all";    // aktiver Filter (App/System/DB/alle)
+let currentFilter = "all";    // aktiver Filter (application/system/data/process/all)
 
-// Panning über Hintergrund: verschiebt alle Asset-Koordinaten
-let panDrag = null;           // { startX, startY, snapshot: [{id,x,y}, ...] }
+let panDrag = null;           // Panning über Hintergrund: { startX, startY, snapshot: [{id,x,y}, ...] }
 let zoom = 1;
 const MIN_ZOOM = 0.7;
 const MAX_ZOOM = 1.3;
-
 
 /* ---------------------------------------------------------
    STORAGE – Laden/Speichern in LocalStorage
@@ -62,43 +85,89 @@ const MAX_ZOOM = 1.3;
 function loadFromStorage() {
   const raw = localStorage.getItem("assetmap-data");
 
-  // Wenn noch keine Daten existieren → Demo-Daten erzeugen
   if (!raw) {
+    // Demo-Daten im neuen Modell (type + specifics)
     assets = [
       {
         id: "erp",
         name: "ERP-System",
-        type: "application",
         description: "Zentrales Warenwirtschafts- und Buchhaltungssystem",
+        type: "application",
+        status: "aktiv",
         owner: "Müller",
         criticality: "high",
+        tags: ["Kern"],
+        links: ["sql"],
         x: 80,
         y: 80,
-        links: ["sql"]
+        specifics: {
+          technologie: "Java/Spring",
+          lizenz: "Proprietär",
+          version: "3.2.1",
+          authentifizierung: "SSO"
+        }
       },
       {
         id: "sql",
         name: "SQL-Datenbank",
-        type: "database",
         description: "Produktivdatenbank für ERP",
+        type: "data",
+        status: "aktiv",
         owner: "ABC IT",
         criticality: "high",
+        tags: ["Produktiv"],
+        links: ["erp"],
         x: 360,
         y: 120,
-        links: ["erp"]
+        specifics: {
+          personenbezogen: true,
+          datenformat: "SQL",
+          speicherort: "db-server-01",
+          backup: "täglich"
+        }
+      },
+      {
+        id: "ldap",
+        name: "Active Directory",
+        description: "Zentrales Verzeichnisdienst",
+        type: "system",
+        status: "aktiv",
+        owner: "IT-Betrieb",
+        criticality: "medium",
+        tags: ["Infrastruktur"],
+        links: ["erp"],
+        x: 200,
+        y: 260,
+        specifics: {
+          betriebssystem: "Windows Server",
+          netzwerkzone: "Intern",
+          ip: "10.0.0.5",
+          authentifizierung: "Kerberos/AD",
+          standort: "Rechenzentrum A"
+        }
       }
     ];
+    saveToStorage();
     return;
   }
 
-  // Gespeicherte Daten laden
-  assets = JSON.parse(raw);
+  try {
+    const parsed = JSON.parse(raw);
+    // einfache Migration: falls alte Struktur ohne specifics existiert, adaptieren
+    assets = parsed.map(a => {
+      if (!a.specifics) a.specifics = {};
+      // normalize property names: older versions used 'owner' etc. keep as is
+      return a;
+    });
+  } catch (e) {
+    console.error("Fehler beim Laden der Daten:", e);
+    assets = [];
+  }
 }
 
 function saveToStorage() {
   localStorage.setItem("assetmap-data", JSON.stringify(assets));
 }
-
 
 /* ---------------------------------------------------------
    FILTERCHECK – bestimmt, ob ein Asset sichtbar ist
@@ -107,15 +176,15 @@ function saveToStorage() {
 function isVisibleInFilter(asset) {
   const matchesType = currentFilter === "all" || asset.type === currentFilter;
 
-  const search = searchInput.value.toLowerCase();
+  const search = (searchInput.value || "").toLowerCase();
   const matchesSearch =
     !search ||
-    asset.name.toLowerCase().includes(search) ||
-    (asset.owner || "").toLowerCase().includes(search);
+    (asset.name || "").toLowerCase().includes(search) ||
+    (asset.owner || "").toLowerCase().includes(search) ||
+    (asset.tags || []).join(" ").toLowerCase().includes(search);
 
   return matchesType && matchesSearch;
 }
-
 
 /* ---------------------------------------------------------
    Layout der Karten
@@ -134,11 +203,10 @@ function autoLayout(mode) {
   const visible = assets; // wir ordnen ALLE Karten an, nicht nur gefilterte
 
   const count = visible.length;
-  const width = 1200;   // Canvas-Breite (ggf. dynamisch machen)
-  const height = 800;   // Canvas-Höhe
+  const width = 1200;
+  const height = 800;
 
   if (mode === "grid") {
-    // --- GRID-LAYOUT ---
     const cols = Math.ceil(Math.sqrt(count));
     const spacingX = width / (cols + 1);
     const spacingY = height / (cols + 1);
@@ -153,7 +221,6 @@ function autoLayout(mode) {
   }
 
   if (mode === "circle") {
-    // --- CIRCLE-LAYOUT ---
     const radius = Math.min(width, height) / 2.5;
     const centerX = width / 2;
     const centerY = height / 2;
@@ -166,16 +233,13 @@ function autoLayout(mode) {
   }
 
   if (mode === "links") {
-    // --- SIMPLE FORCE-LINK-LAYOUT ---
-    // Karten mit vielen Links in die Mitte, andere außen
     visible.forEach(a => {
-      const degree = a.links.length;
+      const degree = (a.links || []).length;
       a.x = width / 2 + (Math.random() - 0.5) * (400 - degree * 20);
       a.y = height / 2 + (Math.random() - 0.5) * (400 - degree * 20);
     });
   }
 }
-
 
 /* ---------------------------------------------------------
    VISUELLE LINKS – zeichnet die blauen Verbindungslinien (SVG)
@@ -186,7 +250,7 @@ function renderLinksVisual() {
   const cardsLayer = document.getElementById("cardsLayer");
   if (!svg || !cardsLayer) return;
 
-  svg.innerHTML = ""; // alte Linien löschen
+  svg.innerHTML = "";
 
   if (!selectedId) return;
 
@@ -195,8 +259,7 @@ function renderLinksVisual() {
 
   const canvasRect = cardsLayer.getBoundingClientRect();
 
-  // Für jede verlinkte Karte eine Linie zeichnen
-  asset.links.forEach(linkId => {
+  (asset.links || []).forEach(linkId => {
     const target = assets.find(a => a.id === linkId);
     if (!target || !isVisibleInFilter(target)) return;
 
@@ -204,7 +267,6 @@ function renderLinksVisual() {
     const cardB = document.querySelector(`.asset-card[data-id="${target.id}"]`);
     if (!cardA || !cardB) return;
 
-    // Mittelpunkte der Karten berechnen
     const rectA = cardA.getBoundingClientRect();
     const rectB = cardB.getBoundingClientRect();
 
@@ -213,7 +275,6 @@ function renderLinksVisual() {
     const x2 = rectB.left + rectB.width / 2 - canvasRect.left;
     const y2 = rectB.top + rectB.height / 2 - canvasRect.top;
 
-    // SVG-Linie erzeugen
     const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
     line.setAttribute("x1", x1);
     line.setAttribute("y1", y1);
@@ -227,13 +288,11 @@ function renderLinksVisual() {
   });
 }
 
-
 /* ---------------------------------------------------------
    RENDERING DER KARTEN – erzeugt die visuellen Asset-Karten
 --------------------------------------------------------- */
 
 function renderAssets() {
-  const cardsLayer = document.getElementById("cardsLayer");
   cardsLayer.innerHTML = "";
 
   assets
@@ -246,7 +305,7 @@ function renderAssets() {
       card.dataset.id = asset.id;
 
       if (asset.id === selectedId) {
-        card.classList.add("selected"); // visuelle Hervorhebung
+        card.classList.add("selected");
       }
 
       // Header (Titel + Tags)
@@ -255,7 +314,7 @@ function renderAssets() {
 
       const title = document.createElement("div");
       title.className = "asset-card-title";
-      title.textContent = asset.name;
+      title.textContent = asset.name || "—";
 
       const tags = document.createElement("div");
       tags.className = "asset-card-tags";
@@ -265,7 +324,9 @@ function renderAssets() {
       typeTag.className = "tag tag-" + asset.type;
       typeTag.textContent =
         asset.type === "application" ? "App" :
-        asset.type === "system" ? "System" : "DB";
+        asset.type === "system" ? "System" :
+        asset.type === "data" ? "Daten" :
+        "Prozess";
 
       // Kritikalität-Tag
       const critTag = document.createElement("span");
@@ -315,13 +376,12 @@ function renderAssets() {
   renderLinksVisual();
 }
 
-
 /* ---------------------------------------------------------
-   GLOBAL DRAG HANDLERS – Karten ziehen & Hintergrund-Panning
+   GLOBAL DRAG HANDLER – Karten ziehen & Hintergrund-Panning
 --------------------------------------------------------- */
 
 document.addEventListener("mousemove", e => {
-  // NEU: Hintergrund-Panning – alle Assets gemeinsam verschieben
+  // Hintergrund-Panning
   if (panDrag && !dragInfo) {
     const dx = e.clientX - panDrag.startX;
     const dy = e.clientY - panDrag.startY;
@@ -334,10 +394,9 @@ document.addEventListener("mousemove", e => {
     });
 
     renderAssets();
-    return; // wichtig: Karten-Dragging in diesem Fall überspringen
+    return;
   }
 
-  // AB HIER: dein bisheriger Karten-Dragging-Code
   if (!dragInfo) return;
 
   const asset = assets.find(a => a.id === dragInfo.id);
@@ -364,18 +423,15 @@ document.addEventListener("mousemove", e => {
 
 document.addEventListener("mouseup", () => {
   if (dragInfo && hasDragged) {
-    saveToStorage(); // Position speichern
+    saveToStorage();
   }
   dragInfo = null;
 
-  // NEU: Panning beenden und neue Positionen speichern
   if (panDrag) {
     saveToStorage();
   }
   panDrag = null;
 });
-
-
 
 /* ---------------------------------------------------------
    BIDIREKTIONALE LINKS – Verknüpfungen zwischen Assets
@@ -399,7 +455,6 @@ function removeLink(a, b) {
   B.links = B.links.filter(id => id !== a);
 }
 
-
 /* ---------------------------------------------------------
    LINKS UI – Dropdown + Liste der bestehenden Links
 --------------------------------------------------------- */
@@ -413,24 +468,24 @@ function renderLinksUI(asset) {
   fieldLinkSelect.appendChild(placeholder);
 
   assets.forEach(a => {
-    if (a.id === asset.id) return;              // sich selbst nicht verlinken
-    if (asset.links.includes(a.id)) return;     // bereits verlinkt
+    if (a.id === asset.id) return;
+    if ((asset.links || []).includes(a.id)) return;
 
     const opt = document.createElement("option");
     opt.value = a.id;
-    opt.textContent = a.name;
+    opt.textContent = a.name || a.id;
     fieldLinkSelect.appendChild(opt);
   });
 
   // Liste der bestehenden Links
   linksListEl.innerHTML = "";
 
-  asset.links.forEach(linkId => {
+  (asset.links || []).forEach(linkId => {
     const target = assets.find(a => a.id === linkId);
     if (!target) return;
 
     const li = document.createElement("li");
-    li.textContent = target.name;
+    li.textContent = target.name || target.id;
 
     const removeBtn = document.createElement("button");
     removeBtn.textContent = "✕";
@@ -439,6 +494,7 @@ function renderLinksUI(asset) {
       saveToStorage();
       renderLinksUI(asset);
       renderLinksVisual();
+      renderAssets();
     });
 
     li.appendChild(removeBtn);
@@ -446,10 +502,21 @@ function renderLinksUI(asset) {
   });
 }
 
-
 /* ---------------------------------------------------------
    SELECTION – Asset auswählen oder Auswahl löschen
 --------------------------------------------------------- */
+
+function updateSpecificSections(type) {
+  sectionApplication.classList.add("hidden");
+  sectionSystem.classList.add("hidden");
+  sectionData.classList.add("hidden");
+  sectionProcess.classList.add("hidden");
+
+  if (type === "application") sectionApplication.classList.remove("hidden");
+  if (type === "system") sectionSystem.classList.remove("hidden");
+  if (type === "data") sectionData.classList.remove("hidden");
+  if (type === "process") sectionProcess.classList.remove("hidden");
+}
 
 function selectAsset(id) {
   selectedId = id;
@@ -459,24 +526,52 @@ function selectAsset(id) {
   detailEmptyEl.style.display = "none";
   detailContentEl.classList.remove("hidden");
 
-  // Felder befüllen
-  fieldName.value = asset.name;
-  fieldType.value = asset.type;
-  fieldDescription.value = asset.description;
-  fieldOwner.value = asset.owner;
-  fieldCriticality.value = asset.criticality;
+  // Gemeinsame Felder befüllen
+  fieldName.value = asset.name || "";
+  fieldType.value = asset.type || "application";
+  fieldStatus.value = asset.status || "aktiv";
+  fieldDescription.value = asset.description || "";
+  fieldOwner.value = asset.owner || "";
+  fieldCriticality.value = asset.criticality || "medium";
+  fieldTags.value = (asset.tags || []).join(", ");
 
   // Titel aktualisieren
-  detailTitle.textContent = asset.name;
+  detailTitle.textContent = asset.name || "—";
   detailSubtitle.textContent =
     (asset.type === "application"
       ? "Anwendung"
       : asset.type === "system"
       ? "System"
-      : "Datenbank") + " · " + (asset.owner || "kein Owner");
+      : asset.type === "data"
+      ? "Daten"
+      : "Prozess") + " · " + (asset.owner || "kein Verantwortlicher");
+
+  // Kategorie-spezifische Sektion anzeigen und Felder füllen
+  updateSpecificSections(asset.type);
+
+  const s = asset.specifics || {};
+
+  // Anwendung
+  appTech.value = s.technologie || "";
+  appLicense.value = s.lizenz || "";
+  appVersion.value = s.version || "";
+  appAuth.value = s.authentifizierung || "";
+
+  // System
+  sysOS.value = s.betriebssystem || "";
+  sysZone.value = s.netzwerkzone || "";
+  sysIP.value = s.ip || "";
+  sysAuth.value = s.authentifizierung || "";
+  sysLocation.value = s.standort || "";
+
+  // Daten
+  dataPersonal.checked = !!s.personenbezogen;
+  dataFormat.value = s.datenformat || "";
+  dataStorage.value = s.speicherort || "";
+  dataBackup.value = s.backup || "";
 
   renderLinksUI(asset);
-  renderAssets(); // sorgt für visuelle Hervorhebung
+  renderAssets();
 }
 
 function clearSelection() {
@@ -489,7 +584,6 @@ function clearSelection() {
 
   renderAssets();
 }
-
 
 /* ---------------------------------------------------------
    UI EVENTS – Buttons, Suche, Filter, Panning-Start
@@ -511,12 +605,9 @@ cardsLayer.addEventListener("mousedown", e => {
 cardsLayer.addEventListener("wheel", e => {
   e.preventDefault();
 
-  // sanfter Zoom
   const zoomFactor = e.deltaY < 0 ? 1.01 : 0.99;
-
   const newZoom = zoom * zoomFactor;
 
-  // Grenzen beachten
   if (newZoom < MIN_ZOOM || newZoom > MAX_ZOOM) {
     return;
   }
@@ -524,16 +615,13 @@ cardsLayer.addEventListener("wheel", e => {
   const oldZoom = zoom;
   zoom = newZoom;
 
-  // Mausposition relativ zur Welt
   const rect = cardsLayer.getBoundingClientRect();
   const mouseX = e.clientX - rect.left;
   const mouseY = e.clientY - rect.top;
 
-  // Weltkoordinaten des Mauszeigers
   const worldX = mouseX / oldZoom;
   const worldY = mouseY / oldZoom;
 
-  // Alle Assets skalieren
   assets.forEach(a => {
     a.x = worldX + (a.x - worldX) * (zoom / oldZoom);
     a.y = worldY + (a.y - worldY) * (zoom / oldZoom);
@@ -543,21 +631,22 @@ cardsLayer.addEventListener("wheel", e => {
   saveToStorage();
 }, { passive: false });
 
-
-
 // Neue Karte hinzufügen
 addAssetBtn.addEventListener("click", () => {
   const id = "asset-" + Date.now();
   const newAsset = {
     id,
     name: "Neue Karte",
-    type: "application",
     description: "",
+    type: "application",
+    status: "aktiv",
     owner: "",
     criticality: "medium",
+    tags: [],
     x: 100 + Math.random() * 200,
     y: 100 + Math.random() * 200,
-    links: []
+    links: [],
+    specifics: {}
   };
   assets.push(newAsset);
   saveToStorage();
@@ -573,9 +662,46 @@ saveBtn.addEventListener("click", () => {
 
   asset.name = fieldName.value.trim();
   asset.type = fieldType.value;
+  asset.status = fieldStatus.value;
   asset.description = fieldDescription.value.trim();
   asset.owner = fieldOwner.value.trim();
   asset.criticality = fieldCriticality.value;
+  asset.tags = (fieldTags.value || "").split(",").map(t => t.trim()).filter(t => t);
+
+  // specifics neu setzen je nach Typ
+  asset.specifics = {};
+
+  if (asset.type === "application") {
+    asset.specifics = {
+      technologie: appTech.value.trim(),
+      lizenz: appLicense.value.trim(),
+      version: appVersion.value.trim(),
+      authentifizierung: appAuth.value.trim()
+    };
+  }
+
+  if (asset.type === "system") {
+    asset.specifics = {
+      betriebssystem: sysOS.value.trim(),
+      netzwerkzone: sysZone.value.trim(),
+      ip: sysIP.value.trim(),
+      authentifizierung: sysAuth.value.trim(),
+      standort: sysLocation.value.trim()
+    };
+  }
+
+  if (asset.type === "data") {
+    asset.specifics = {
+      personenbezogen: !!dataPersonal.checked,
+      datenformat: dataFormat.value.trim(),
+      speicherort: dataStorage.value.trim(),
+      backup: dataBackup.value.trim()
+    };
+  }
+
+  if (asset.type === "process") {
+    asset.specifics = {};
+  }
 
   saveToStorage();
   selectAsset(asset.id);
@@ -589,7 +715,7 @@ deleteBtn.addEventListener("click", () => {
 
   // Links anderer Assets bereinigen
   assets.forEach(a => {
-    a.links = a.links.filter(x => x !== id);
+    a.links = (a.links || []).filter(x => x !== id);
   });
 
   // Asset entfernen
@@ -613,6 +739,7 @@ addLinkBtn.addEventListener("click", () => {
 
   renderLinksUI(asset);
   renderLinksVisual();
+  renderAssets();
 });
 
 // Suche
@@ -640,6 +767,10 @@ pillButtons.forEach(btn => {
   });
 });
 
+// Wenn Kategorie im Detail geändert wird, Sektionen anpassen
+fieldType.addEventListener("change", () => {
+  updateSpecificSections(fieldType.value);
+});
 
 /* ---------------------------------------------------------
    INIT – Anwendung starten

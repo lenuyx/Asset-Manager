@@ -5,7 +5,6 @@
   font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
 
-/* NEU: Body auf volle Höhe + Hintergrund */
 html, body {
   width: 100%;
   height: 100%;
@@ -15,19 +14,13 @@ body {
   background: #e5e7eb;
 }
 
-/* APP: statt fester Breite → volle Viewportgröße */
 .app {
-  width: 100vw;          /* vorher: 1200px */
-  height: 100vh;         /* NEU: volle Höhe */
-  margin: 0;             /* vorher: 24px auto */
+  width: 100vw;
+  height: 100vh;
+  margin: 0;
   background: #f9fafb;
-  border-radius: 0;      /* optional: kein Card-Look mehr */
-  box-shadow: none;      /* optional: kein Schatten mehr */
   overflow: hidden;
-  border: none;          /* optional: kein Rahmen mehr */
 }
-
-/* TOPBAR */
 
 .topbar {
   height: 60px;
@@ -104,15 +97,11 @@ body {
   margin-top: 6px;
 }
 
-/* MAIN LAYOUT */
-/* statt fixer Höhe → restliche Höhe unter der Topbar nutzen */
 .main {
   display: grid;
   grid-template-columns: 2fr 1fr;
-  height: calc(100vh - 60px);  /* vorher: 640px */
+  height: calc(100vh - 60px);
 }
-
-/* CANVAS */
 
 .canvas {
   position: relative;
@@ -128,7 +117,6 @@ body {
   width: 100%;
   height: 100%;
   z-index: 2;
-  pointer-events: auto;
 }
 
 .links-svg {
@@ -140,8 +128,6 @@ body {
   pointer-events: none;
   z-index: 1;
 }
-
-/* DETAILPANEL */
 
 .detail {
   background: #ffffff;
@@ -196,7 +182,7 @@ body {
 }
 
 .field-label {
-  width: 100px;
+  width: 120px;
   color: #6b7280;
   font-size: 12px;
 }
@@ -214,8 +200,6 @@ body {
 .field textarea {
   resize: vertical;
 }
-
-/* KARTEN */
 
 .asset-card {
   position: absolute;
@@ -271,7 +255,12 @@ body {
   color: #374151;
 }
 
-.tag-database {
+.tag-data {
+  background: #cffafe;
+  color: #0e7490;
+}
+
+.tag-process {
   background: #ede9fe;
   color: #6d28d9;
 }
@@ -297,8 +286,6 @@ body {
   color: #4b5563;
 }
 
-/* LINKS LISTE */
-
 .links-list {
   list-style: none;
   padding-left: 0;
@@ -319,4 +306,8 @@ body {
   color: #b91c1c;
   cursor: pointer;
   font-size: 11px;
+}
+
+.hidden {
+  display: none;
 }
