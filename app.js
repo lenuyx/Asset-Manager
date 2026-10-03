@@ -569,7 +569,8 @@ function selectAsset(id) {
   dataFormat.value = s.datenformat || "";
   dataStorage.value = s.speicherort || "";
   dataBackup.value = s.backup || "";
-
+  
+  AssetConfig.fill(asset);
   renderLinksUI(asset);
   renderAssets();
 }
@@ -702,7 +703,7 @@ saveBtn.addEventListener("click", () => {
   if (asset.type === "process") {
     asset.specifics = {};
   }
-
+  AssetConfig.read(asset); 
   saveToStorage();
   selectAsset(asset.id);
 });
